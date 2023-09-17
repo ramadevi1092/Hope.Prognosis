@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CodePen - UL timeline cards</title>
+    <link rel="stylesheet" href="./style.css">
+
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
+    <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+
+
+    <!-- script for pie chart -->
+    <script>
+        am5.ready(function () {
+
+            // Create root element
+            // https://www.amcharts.com/docs/v5/getting-started/#Root_element
+            var root = am5.Root.new("chartdiv1");
+
+
+            // Set themes
+            // https://www.amcharts.com/docs/v5/concepts/themes/
+            root.setThemes([
+                am5themes_Animated.new(root)
+            ]);
+
+
+            // Create chart
+            // https://www.amcharts.com/docs/v5/charts/xy-chart/
+            var chart = root.container.children.push(am5xy.XYChart.new(root, {
+                panX: true,
+                panY: true,
+                wheelX: "panX",
+                wheelY: "zoomX",
+                pinchZoomX: true
+            }));
+
+            // Add cursor
+            // https://www.amcharts.com/docs/v5/charts/xy-chart/cursor/
+            var cursor = chart.set("cursor", am5xy.XYCursor.new(root, {}));
+            cursor.lineY.set("visible", false);
+
+
+            // Create axes
+            // https://www.amcharts.com/docs/v5/charts/xy-chart/axes/
+            var xRenderer = am5xy.AxisRendererX.new(root, { minGridDistance: 30 });
+            xRenderer.labels.template.setAll({
+                rotation: -20,
+                // tooltipText: "no of visit per half year",
+                centerY: am5.p40,
+                centerX: am5.p100,
+                paddingRight: 20,
+
+            });
+
+            xRenderer.grid.template.setAll({
+                location: 1
+            })
+
+            var xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
+                maxDeviation: 0.3,
+                categoryField: "country",
+                renderer: xRenderer,
+                tooltip: am5.Tooltip.new(root, {})
+            }));
+
+            var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+                maxDeviation: 0.3,
+                renderer: am5xy.AxisRendererY.new(root, {
+                    strokeOpacity: 0.1
+                })
+            }));
+
+
+            // Create series
+            // https://www.amcharts.com/docs/v5/charts/xy-chart/series/
+            var series = chart.series.push(am5xy.ColumnSeries.new(root, {
+                name: "Series 1",
+                xAxis: xAxis,
+                yAxis: yAxis,
+                valueYField: "value",
+                sequencedInterpolation: true,
+                categoryXField: "country",
+                tooltip: am5.Tooltip.new(root, {
+                    labelText: "{valueY}"
+                })
+            }));
+
+            series.columns.template.setAll({ cornerRadiusTL: 5, cornerRadiusTR: 5, strokeOpacity: 0 });
+            series.columns.template.adapters.add("fill", function (fill, target) {
+                return chart.get("colors").getIndex(series.columns.indexOf(target));
+            });
+
+            series.columns.template.adapters.add("stroke", function (stroke, target) {
+                return chart.get("colors").getIndex(series.columns.indexOf(target));
+            });
+
+
+            // Set data
+            var data = [{
+                country: "PDFs",
+                value: 34
+            }, {
+                country: "Images",
+                value: 41
+            }, {
+                country: "Audios",
+                value: 25
+            }, {
+                country: "Videos",
+                value: 30
+            }
+            ];
+
+            xAxis.data.setAll(data);
+            series.data.setAll(data);
+
+
+            // Make stuff animate on load
+            // https://www.amcharts.com/docs/v5/concepts/animations/
+            series.appear(1000);
+            chart.appear(1000, 100);
+
+        }); // end am5.ready()
+    </script>
+    <!-- script for radius pie chart -->
+    <script>
+        am5.ready(function () {
+
+            // Create root element
+            // https://www.amcharts.com/docs/v5/getting-started/#Root_element
+            var root = am5.Root.new("chartdiv2");
+
+            
+            // Set themes
+            // https://www.amcharts.com/docs/v5/concepts/themes/
+            root.setThemes([
+                am5themes_Animated.new(root)
+            ]);
+
+
+            // Create chart
+            // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/
+            var chart = root.container.children.push(am5percent.PieChart.new(root, {
+                layout: root.verticalLayout
+            }));
+
+
+            // Create series
+            // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Series
+            var series = chart.series.push(am5percent.PieSeries.new(root, {
+                alignLabels: true,
+                calculateAggregates: true,
+                valueField: "value",
+                categoryField: "category"
+            }));
+
+            series.slices.template.setAll({
+                strokeWidth: 3,
+                stroke: am5.color(0xffffff)
+            });
+
+            series.labelsContainer.set("paddingTop", 20)
+
+
+            // Set up adapters for variable slice radius
+            // https://www.amcharts.com/docs/v5/concepts/settings/adapters/
+            series.slices.template.adapters.add("radius", function (radius, target) {
+                var dataItem = target.dataItem;
+                var high = series.getPrivate("valueHigh");
+
+                if (dataItem) {
+                    var value = target.dataItem.get("valueWorking", 0);
+                    return radius * value / high
+                }
+                return radius;
+            });
+
+
+            // Set data
+            // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Setting_data
+            series.data.setAll([{
+                value: 10,
+                category: "Outpatient Visit"
+            }, {
+                value: 9,
+                category: "Inpatient Visit"
+            }, {
+                value: 6,
+                category: "Emergency Visit"
+            }, {
+                value: 5,
+                category: "Surgery Visit"
+            }]);
+
+
+            // Create legend
+            // https://www.amcharts.com/docs/v5/charts/percent-charts/legend-percent-series/
+            var legend = chart.children.push(am5.Legend.new(root, {
+                centerX: am5.p50,
+                x: am5.p50,
+                // marginLeft:-20,
+                marginTop: 25,
+                marginBottom: 25
+            }));
+
+            legend.data.setAll(series.dataItems);
+
+
+            // Play initial series animation
+            https://www.amcharts.com/docs/v5/concepts/animations/#Animation_of_series
+            series.appear(1000, 100);
+
+
+        }); // end am5.ready()
+    </script>
+    <!-- script for column chart -->
+    <script>
+        am5.ready(function () {
+
+            // Create root element
+            // https://www.amcharts.com/docs/v5/getting-started/#Root_element
+            var root = am5.Root.new("chartdiv3");
+
+
+            // Set themes
+            // https://www.amcharts.com/docs/v5/concepts/themes/
+            root.setThemes([
+                am5themes_Animated.new(root)
+            ]);
+
+
+            // Create chart
+            // https://www.amcharts.com/docs/v5/charts/xy-chart/
+            var chart = root.container.children.push(am5xy.XYChart.new(root, {
+                panX: true,
+                panY: true,
+                wheelX: "panX",
+                wheelY: "zoomX",
+                pinchZoomX: true
+            }));
+
+            // Add cursor
+            // https://www.amcharts.com/docs/v5/charts/xy-chart/cursor/
+            var cursor = chart.set("cursor", am5xy.XYCursor.new(root, {}));
+            cursor.lineY.set("visible", false);
+
+
+            // Create axes
+            // https://www.amcharts.com/docs/v5/charts/xy-chart/axes/
+            var xRenderer = am5xy.AxisRendererX.new(root, { minGridDistance: 30 });
+            xRenderer.labels.template.setAll({
+                rotation: -30,
+                tooltipText: "no of visit per half year",
+                centerY: am5.p40,
+                centerX: am5.p100,
+                // paddingRight: 15,
+
+            });
+
+            xRenderer.grid.template.setAll({
+                location: 1
+            })
+
+            var xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
+                maxDeviation: 0.3,
+                categoryField: "country",
+                renderer: xRenderer,
+                tooltip: am5.Tooltip.new(root, {})
+            }));
+
+            var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+                maxDeviation: 0.3,
+                renderer: am5xy.AxisRendererY.new(root, {
+                    strokeOpacity: 0.1
+                })
+            }));
+
+
+            // Create series
+            // https://www.amcharts.com/docs/v5/charts/xy-chart/series/
+            var series = chart.series.push(am5xy.ColumnSeries.new(root, {
+                name: "Series 1",
+                xAxis: xAxis,
+                yAxis: yAxis,
+                valueYField: "value",
+                sequencedInterpolation: true,
+                categoryXField: "country",
+                tooltip: am5.Tooltip.new(root, {
+                    labelText: "{valueY}"
+                })
+            }));
+
+            series.columns.template.setAll({ cornerRadiusTL: 5, cornerRadiusTR: 5, strokeOpacity: 0 });
+            series.columns.template.adapters.add("fill", function (fill, target) {
+                return chart.get("colors").getIndex(series.columns.indexOf(target));
+            });
+
+            series.columns.template.adapters.add("stroke", function (stroke, target) {
+                return chart.get("colors").getIndex(series.columns.indexOf(target));
+            });
+
+
+            // Set data
+            var data = [{
+                country: "2023",
+                value: 12
+            }, {
+                country: "2022",
+                value: 15
+            }, {
+                country: "2021",
+                value: 17
+            }, {
+                country: "2020",
+                value: 8
+            }, {
+                country: "2019",
+                value: 10
+            }
+            ];
+
+            xAxis.data.setAll(data);
+            series.data.setAll(data);
+
+
+            // Make stuff animate on load
+            // https://www.amcharts.com/docs/v5/concepts/animations/
+            series.appear(1000);
+            chart.appear(1000, 100);
+
+        }); // end am5.ready()
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const popup = document.getElementById('popup');
+            console.log(popup);
+            const fileIframe = document.getElementById('file-iframe');
+            console.log(fileIframe)
+            const fileLinks = document.querySelectorAll('.file-link');
+            console.log(fileLinks)
+            const closePopupButton = document.getElementById('close-popup');
+
+            function openPopup(src) {
+                fileIframe.src = src;
+                popup.style.display = 'block';
+            }
+
+            function closePopup() {
+                fileIframe.src = '';
+                popup.style.display = 'none';
+            }
+
+            fileLinks.forEach((link) => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const filePath = link.getAttribute('href');
+                    openPopup(filePath);
+                });
+            });
+
+            closePopupButton.addEventListener('click', () => {
+                closePopup();
+            });
+        });
+
+
+    </script>
+</head>
+
+<body>
+    <h1 style="color:blue;">Doctor Portal - Patient Data Analysis Dashboard</h1>
+    <br/><br/><br/>
+    <!-- partial:index.partial.html -->
+   
+    <h1>Patient Timeline Records</h1>
+    <h1 id="right-side">Chart Summary</h1>
+    <!-- <br> -->
+    <div class="container">
+        <ul class="left-block">
+            <li style="--accent-color:#41516C">
+                <div class="date">2023</div>
+                <div class="title"><b>Cardioligy Visit - Dr. Pankaj Shah</b></div>
+                <ol>
+                    <a href="D:\RAMA\MedicalDocs\0f6341c3-938f-445e-9850-eda5897d141c\0f6341c3-938f-445e-9850-eda5897d141c_AlzihmerReport_DiagonesBySimon.pdf" class="file-link"
+                        target="_blank">cardiac profile</a>
+                    <br>
+                    <a href="D:\RAMA\MedicalDocs\0f6341c3-938f-445e-9850-eda5897d141c\0f6341c3-938f-445e-9850-eda5897d141c_AnkleSprain_DiagonesBySimon.pdf" class="file-link"
+                        target="_blank">Acute Inferior Myocardial Infarction</a>
+                    <br>
+                    <a href="D:/dist/patientRecords/Cradiology-video.mp4" class="file-link"
+                        target="_blank">Cardiac Visualization</a>
+                    <br>
+                    <!-- class="file-link" -->
+                </ol>
+                
+            </li>
+            <li style="--accent-color:#FBCA3E">
+                <div class="date">2022</div>
+                <div class="title"><b>Video Consultation - Dr. William Stark</b></div>
+                <ol>
+                    <a href="D:\RAMA\MedicalDocs\1a00a970-04fa-4c71-a4fa-10176a40a178\1a00a970-04fa-4c71-a4fa-10176a40a178_ToothCaninicalReport_DiagonesByJake.pdf" class="file-link">Blood Test
+                        Report</a>
+                    <br>
+                    <a href="D:/dist/patientRecords/videocall.mp4" class="file-link">Video
+                        Consultation Recording</a>
+                    <br>
+                    <a href="D:/dist/patientRecords/cardiology_audio.mp3" class="file-link">Telephonic
+                        Call Recording</a>
+                    <br>
+                </ol>
+            </li>
+            <li style="--accent-color:#E24A68">
+                <div class="date">2021</div>
+                <div class="title"><b>Rib Surgery - Dr. Manish Bansal</b></div>
+                <ol>
+                    <a href="D:/dist/patientRecords/fracture_Xray_Image.jpg" class="file-link">Ribs
+                        Fracture X-Ray</a>
+                    <br>
+                    <a href="D:\RAMA\MedicalDocs\1a00a970-04fa-4c71-a4fa-10176a40a178\1a00a970-04fa-4c71-a4fa-10176a40a178_BoneMarrowReport_DiagonesByJake.pdf" class="file-link">Complications
+                        in Surgery</a>
+                    <br>
+                    <a href="D:\RAMA\MedicalDocs\1a00a970-04fa-4c71-a4fa-10176a40a178\1a00a970-04fa-4c71-a4fa-10176a40a178_CBCReport_DiagonesByJake.pdf" class="file-link">Surgery
+                        Details</a>
+                    <br>
+                    <a href="D:/dist/patientRecords/Surgery_Recording.mp4" class="file-link">Surgery
+                        Recording</a>
+                </ol>
+            </li>
+            <li style="--accent-color:#E24A00">
+                <div class="date">2020</div>
+                <div class="title"><b>Full Body CheckUp - Dr. Manish Goyal</b></div>
+                <ol>
+                    <a href="D:\RAMA\MedicalDocs\3b383e68-56f7-4976-be78-9084d1c85bdd\3b383e68-56f7-4976-be78-9084d1c85bdd_ERReport_DiagonesByTom.pdf" class="file-link">Blood
+                        Report</a>
+                    <br>
+                    <a href="D:\RAMA\MedicalDocs\3b383e68-56f7-4976-be78-9084d1c85bdd\3b383e68-56f7-4976-be78-9084d1c85bdd_FaceDermaReport_DiagonesByTom.pdf" class="file-link" >HISTORY
+                        OF MEDICATION USE</a>
+                    <br>
+                    <a href="D:\RAMA\MedicalDocs\3b383e68-56f7-4976-be78-9084d1c85bdd\3b383e68-56f7-4976-be78-9084d1c85bdd_Report_DiagonesByTom.pdf" class="file-link">Vital
+                        Results</a>
+                    <br>
+                    <a href="D:\RAMA\MedicalDocs\3b383e68-56f7-4976-be78-9084d1c85bdd\3b383e68-56f7-4976-be78-9084d1c85bdd_SkinToneReport_DiagonesByTom.pdf" class="file-link">Summary
+                        Report</a>
+                    <br>
+                    <a href="D:/dist/patientRecords/Surgery_Recording.mp4" class="file-link">Video
+                        Call
+                        Recording</a>
+                </ol>
+            </li>
+            <li style="--accent-color:#E24A99">
+                <div class="date">2019</div>
+                <div class="title"><b>Routine CheckUp - Dr. Albert Jones</b></div>
+                <ol>
+                    <a href="D:\RAMA\MedicalDocs\4ddc117f-6d72-4b38-8a0b-a4f1fca73d3b\4ddc117f-6d72-4b38-8a0b-a4f1fca73d3b_KeratinReport_DiagonesByWilliam.pdf" class="file-link">Blood Test
+                        Report</a>
+                    <br>
+                    <a href="D:\RAMA\MedicalDocs\4ddc117f-6d72-4b38-8a0b-a4f1fca73d3b\4ddc117f-6d72-4b38-8a0b-a4f1fca73d3b_GinigivitisReport_DiagonesByWilliam.pdf" class="file-link">Summary
+                        Report</a>
+                    <br>
+                    <a href="D:/dist/patientRecords/cardiology_audio.mp3" class="file-link">Telephonic
+                        Call Recording</a>
+                    <br>
+                    <a href="D:/dist/patientRecords/videocall.mp4" class="file-link">Video
+                        Call
+                        Recording</a>
+                </ol>
+            </li>
+
+        </ul>
+        <div id="popup" class="popup">
+            <div class="popup-content">
+                <span class="close" id="close-popup" onclick="closePopup()">close</span>
+
+                <iframe id="file-iframe" class="file-iframe" src=""></iframe>
+            </div>
+        </div>
+        <div class="right-block">
+            <div id="chartdiv1">
+                <!-- <b class="text-class">File_Count</b> -->
+                <b style="margin-left: 140px;">HIPAA/DISHA Compliance Dashboard</b>
+            </div>
+            <div id="chartdiv2">
+                <b style="margin-left: 140px;">Patient Hospital Visit Types Distribution</b>
+            </div>
+            <div id="chartdiv3">
+                <b style="margin-left: 130px;">Total No of Visits to Hospital Yearly</b>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>
