@@ -1,4 +1,4 @@
-Contract Approval Demo Application
+Prognosis Application
 --------
 
 This is a demo application to demonstrate how to consume the IM services from the OpenText Cloud Platform.
