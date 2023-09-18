@@ -1,7 +1,7 @@
 Prognosis Application
 --------
 
-This is a demo application to demonstrate how to consume the IM services from the OpenText Cloud Platform.
+This is a application to demonstrate how to consume Patient Data with the IM services from the OpenText Cloud Platform.
 
 ## Install Visual Studio Code
 
